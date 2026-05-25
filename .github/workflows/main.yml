@@ -1,51 +1,31 @@
-name: Variables demo in workflow
+name: Build nodejs application using github actions
 on: 
-    push:
-        branches:
-            - master
-env: 
-    PYTHON_VERSION: 3.9
-jobs: 
-    build-python-code-Global:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v6
+  push:
+    branches: 
+      - master
+  workflow_dispatch:
+jobs:
+  buildnodejs:
+    continue-on-error: true
+    strategy:
+      matrix:
+        node-version: [12, 16, 18, 20]
+        operating-system: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.operating-system }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      
+      - name: Install nodejs of version ${{matrix.node-version}} and npm
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
 
-            - name: Setup python ${{ env.PYTHON_VERSION }}
-              uses: actions/setup-python@v6
-              with:
-                python-version: ${{ env.PYTHON_VERSION }}
-            
-            - name: Print Python Version
-              run: python --version
-    
-    build-python--code-Job:
-        env:
-            PYTHON_VERSION_JOB: 3.11
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v6
+      - name: Install dependencies  using npm
+        run: npm install
 
-            - name: Setup python ${{env.PYTHON_VERSION_JOB}}
-              uses: actions/setup-python@v6
-              with:
-                python-version: ${{env.PYTHON_VERSION_JOB}}
-    
-    build-python-code-step:
-        runs-on: ubuntu-latest
-        steps: 
-            - name: Checkout code
-              uses: actions/checkout@v6
-
-            - name: Setup python ${{env.PYTHON_VERSION_STEP}}
-              env:
-                PYTHON_VERSION_STEP: 3.12
-              uses: actions/setup-python@v6
-              with: 
-                python-version: ${{env.PYTHON_VERSION_STEP}}
-            
-            - name: Print Python Version
-              run: python --version
-
+      - name: Run tests using npm
+        run: npm test
+      
+      - name: Build the application using npm
+        run: npm run build
