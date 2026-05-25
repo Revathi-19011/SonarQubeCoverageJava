@@ -27,5 +27,5 @@ jobs:
       - name: Run tests using npm
         run: npm test
       
-      - name: Build the application using npm
+      - name: Build application using npm
         run: npm run build
